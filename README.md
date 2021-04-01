@@ -91,7 +91,7 @@ MINIO_BUCKET = getenv('MINIO_BUCKET', '')
 
 ## Usage example
 
-Change enviroment variables in app.py.
+Change enviroment variables 
 
 ```python
 ...
