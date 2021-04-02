@@ -52,6 +52,7 @@ check_required_env(MINIO_BUCKET, 'MINIO_BUCKET')
 log.basicConfig(format='%(asctime)s %(levelname)s:%(message)s', level=log.INFO)
 
 # variables
+version="1.1"
 imap_host=IMAP_HOST
 imap_port=int(IMAP_PORT)
 imap_folder_processed=IMAP_FOLDER_PROCESSED
@@ -86,6 +87,7 @@ if not path.isdir(folder_path) and not folder_path == "":
         mkdir(folder_path)
 
 # imap connection
+log.info(f"Script Version: {version}")
 log.info(f"Conecting to {imap_host}:{imap_port}")
 imap_zimbra = imaplib.IMAP4(host=imap_host,port=imap_port)
 res, msg_res = imap_zimbra.starttls()
