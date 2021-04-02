@@ -78,6 +78,7 @@ minio_url=MINIO_SERVER
 access_key=MINIO_ACCESS_KEY
 secret_key=MINIO_SECRET_KEY
 bucket_name=MINIO_BUCKET
+metadata_file="msg-metadata.json"
 
 list_message = list()
 
@@ -199,11 +200,11 @@ for id_msg in msg[0].split():
             else:            
                 message['body_html'] = imap_msg.get_payload()
 
-        metadata_msg_path = path.join(message['folder'],"msg-metadata")    
+        metadata_msg_path = path.join(message['folder'],metadata_file)    
         message['id'] = message['id'].decode('utf-8')
         metadata = json.dumps(message, indent=4, sort_keys=True)
 
-        log.info(f"Saving metadata:  msg-metadata in {metadata_msg_path}")
+        log.info(f"Saving metadata:  {metadata_file} in {metadata_msg_path}")
         fp = open(metadata_msg_path, 'w')
         fp.write(str(metadata))
         fp.close()                
@@ -236,15 +237,16 @@ client = Minio(
     minio_url,
     access_key=access_key,
     secret_key=secret_key,
+    region='br'
 )
 # # Upload messages
 for msg_minio in list_message:    
     prefix = path.relpath(msg_minio['folder'],folder_path)
 
-    path_metadata = path.join(msg_minio['folder'], "msg-metadata")
-    log.info(f"Copy to bucket:{bucket_name} File: {prefix}-msg-metadata ")
+    path_metadata = path.join(msg_minio['folder'], metadata_file)
+    log.info(f"Copy to bucket:{bucket_name} File: {prefix}-{metadata_file} Path: {path_metadata}")
     client.fput_object(
-        bucket_name, f"{prefix}-msg-metadata", path_metadata,
+        bucket_name, f"{prefix}-{metadata_file}", path_metadata,
     )
 
     for at_name in msg_minio['attachs']:
