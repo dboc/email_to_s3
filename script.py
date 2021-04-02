@@ -34,6 +34,7 @@ check_required_env(IMAP_FOLDER_OTHERS, 'IMAP_FOLDER_OTHERS')
 IMAP_FOLDER_DELETED = getenv('IMAP_FOLDER_DELETED', '\\Deleted')
 IMAP_FOLDER_FLAGS = getenv('IMAP_FOLDER_FLAGS', '+FLAGS')
 FILTER_FROM = getenv('FILTER_FROM', '')
+FILTER_ATTACHS = getenv('FILTER_ATTACHS', '')
 check_required_env(FILTER_FROM, 'FILTER_FROM')
 # FILTER_SUBJECT = getenv('FILTER_SUBJECT', '')
 # FILTER_TO = getenv('FILTER_TO', '')
@@ -57,9 +58,18 @@ imap_folder_processed=IMAP_FOLDER_PROCESSED
 imap_folder_deleted=IMAP_FOLDER_DELETED
 imap_folder_flags=IMAP_FOLDER_FLAGS
 imap_folder_others=IMAP_FOLDER_OTHERS
-filter_from=FILTER_FROM
 user_name=IMAP_USER
 passwd=IMAP_PASSWD
+filter_from=FILTER_FROM
+filter_attachs = ''
+
+if FILTER_ATTACHS:
+    filter_attachs = dict()    
+    for tmp_key_value in FILTER_ATTACHS.strip().split(','):
+        tmp_key_value = tmp_key_value.strip()
+        key, value = tmp_key_value.split(':')
+        filter_attachs[key] = value
+
 # folder_path=path.abspath(path.dirname(__file__)).join("messages")
 folder_path=SCRIPT_FOLDER
 search_regex=""
@@ -172,7 +182,7 @@ for id_msg in msg[0].split():
                         file_name = unidecode(tmp_fn)
                     else:
                         file_name = unidecode(tmp_fn.decode(tmp_charset))               
-                    
+                                        
                     message['attachs'].append(file_name)
                     attach_path = path.join(message['folder'], file_name)
 
@@ -239,9 +249,18 @@ for msg_minio in list_message:
 
     for at_name in msg_minio['attachs']:
         path_attach = path.join(msg_minio['folder'], at_name)
-        log.info(f"Copy to bucket:{bucket_name} File: {prefix}-{at_name}")
-        client.fput_object(
-            bucket_name, f"{prefix}-{at_name}", path_attach,
-        )
+
+        if filter_attachs:
+            for pattern,rename in filter_attachs.items():                
+                if(re.match(pattern,at_name)):                                        
+                    log.info(f"Copy to bucket:{bucket_name} File: {rename}")
+                    client.fput_object(
+                        bucket_name, f"{rename}", path_attach,
+                    )
+        else:
+            log.info(f"Copy to bucket:{bucket_name} File: {prefix}-{at_name}")
+            client.fput_object(
+                bucket_name, f"{prefix}-{at_name}", path_attach,
+            )
 
 log.info(f"Sucess!")
