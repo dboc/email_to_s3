@@ -34,8 +34,8 @@ check_required_env(IMAP_FOLDER_OTHERS, 'IMAP_FOLDER_OTHERS')
 IMAP_FOLDER_DELETED = getenv('IMAP_FOLDER_DELETED', '\\Deleted')
 IMAP_FOLDER_FLAGS = getenv('IMAP_FOLDER_FLAGS', '+FLAGS')
 FILTER_FROM = getenv('FILTER_FROM', '')
-FILTER_ATTACHS = getenv('FILTER_ATTACHS', '')
 check_required_env(FILTER_FROM, 'FILTER_FROM')
+FILTER_ATTACHS = getenv('FILTER_ATTACHS', '')
 # FILTER_SUBJECT = getenv('FILTER_SUBJECT', '')
 # FILTER_TO = getenv('FILTER_TO', '')
 SCRIPT_FOLDER = getenv('SCRIPT_FOLDER', path.join(path.abspath(path.dirname(__file__)),"temp"))
@@ -252,7 +252,7 @@ for msg_minio in list_message:
 
         if filter_attachs:
             for pattern,rename in filter_attachs.items():                
-                if(re.match(pattern,at_name)):                                        
+                if(re.match(pattern,at_name,re.IGNORECASE)):                                        
                     log.info(f"Copy to bucket:{bucket_name} File: {rename}")
                     client.fput_object(
                         bucket_name, f"{rename}", path_attach,
